@@ -1,11 +1,9 @@
-// src/components/Dashboard.js
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Grid, Paper, Typography, Button, List, ListItem, ListItemText, ListItemIcon, Switch, FormControlLabel } from '@material-ui/core';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Grid, Paper, Typography, Button, List, ListItem, ListItemText, ListItemIcon, Switch, FormControlLabel, Chip } from '@material-ui/core';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import { TrendingUp, TrendingDown, Warning } from '@material-ui/icons';
 
-// Initial data
 const initialTransactionData = [
   { name: 'Mon', transactions: 4000, fraudulent: 240 },
   { name: 'Tue', transactions: 3000, fraudulent: 139 },
@@ -35,11 +33,11 @@ function Dashboard() {
   const [riskData, setRiskData] = useState(initialRiskData);
   const [recentAlerts, setRecentAlerts] = useState(initialAlerts);
   const [isMonitoring, setIsMonitoring] = useState(true);
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     if (isMonitoring) {
       const interval = setInterval(() => {
-        // Simulate new transaction data
         setTransactionData(prevData => {
           const newData = [...prevData];
           newData[6] = {
@@ -50,7 +48,6 @@ function Dashboard() {
           return newData;
         });
 
-        // Simulate changing risk distribution
         setRiskData(prevData => {
           return prevData.map(item => ({
             ...item,
@@ -58,7 +55,6 @@ function Dashboard() {
           }));
         });
 
-        // Simulate new alerts
         if (Math.random() > 0.7) {
           setRecentAlerts(prevAlerts => [
             {
@@ -68,6 +64,14 @@ function Dashboard() {
             ...prevAlerts.slice(0, 2)
           ]);
         }
+
+        const newTransaction = {
+          amount: Math.floor(Math.random() * 10000),
+          merchant: `Merchant ${Math.floor(Math.random() * 100)}`,
+          riskScore: Math.floor(Math.random() * 100),
+          status: Math.random() > 0.8 ? 'Flagged' : 'Approved'
+        };
+        setTransactions(prev => [newTransaction, ...prev].slice(0, 10));
       }, 3000);
 
       return () => clearInterval(interval);
@@ -110,9 +114,8 @@ function Dashboard() {
         </Alert>
       </Grid>
       
-      {/* Transaction Overview Chart */}
       <Grid item xs={12} md={8}>
-        <Paper elevation={3} style={{ padding: '20px' }}>
+        <Paper elevation={3} className="dashboard-card">
           <Typography variant="h6" gutterBottom>Transaction Overview</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={transactionData}>
@@ -128,9 +131,8 @@ function Dashboard() {
         </Paper>
       </Grid>
 
-      {/* Risk Distribution Chart */}
       <Grid item xs={12} md={4}>
-        <Paper elevation={3} style={{ padding: '20px' }}>
+        <Paper elevation={3} className="dashboard-card">
           <Typography variant="h6" gutterBottom>Risk Distribution</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -154,9 +156,8 @@ function Dashboard() {
         </Paper>
       </Grid>
 
-      {/* Recent Alerts */}
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} style={{ padding: '20px' }}>
+        <Paper elevation={3} className="dashboard-card">
           <Typography variant="h6" gutterBottom>Recent Alerts</Typography>
           <List>
             {recentAlerts.map((alert, index) => (
@@ -179,30 +180,23 @@ function Dashboard() {
         </Paper>
       </Grid>
 
-      {/* FraudGuard Advantages */}
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} style={{ padding: '20px' }}>
-          <Typography variant="h6" gutterBottom>FraudGuard Advantages</Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">Real-time Detection</Typography>
-              <Typography variant="body2">
-                Our AI-powered system analyzes transactions in real-time, providing immediate fraud detection capabilities.
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">Advanced Machine Learning</Typography>
-              <Typography variant="body2">
-                Continuously learning algorithms adapt to new fraud patterns, staying ahead of cybercriminals.
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">Comprehensive Reporting</Typography>
-              <Typography variant="body2">
-                Detailed insights and analytics help businesses understand fraud trends and make informed decisions.
-              </Typography>
-            </Grid>
-          </Grid>
+        <Paper elevation={3} className="dashboard-card">
+          <Typography variant="h6" gutterBottom>Live Transaction Feed</Typography>
+          <List className="alert-list">
+            {transactions.map((transaction, index) => (
+              <ListItem key={index} className={`alert-item ${transaction.status === 'Flagged' ? 'high' : 'low'}`}>
+                <ListItemText
+                  primary={`$${transaction.amount} - ${transaction.merchant}`}
+                  secondary={`Risk Score: ${transaction.riskScore}`}
+                />
+                <Chip 
+                  label={transaction.status} 
+                  color={transaction.status === 'Approved' ? 'primary' : 'secondary'}
+                />
+              </ListItem>
+            ))}
+          </List>
         </Paper>
       </Grid>
     </Grid>
